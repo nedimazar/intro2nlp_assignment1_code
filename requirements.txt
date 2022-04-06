@@ -3,4 +3,4 @@ Pillow
 torch>=1.2
 tabulate
 tqdm
-spacy=3.2
+spacy==3.2
