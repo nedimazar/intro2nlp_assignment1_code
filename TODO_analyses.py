@@ -5,15 +5,16 @@ import spacy
 import numpy as np
 
 # from spacy import textacy
+from spacy.tokens.doc import Doc
 from preprocess import Preprocessor
 from collections import Counter
 
 
-def num_tokens(doc):
+def num_tokens(doc: Doc):
     return len(doc)
 
 
-def num_types(doc):
+def num_types(doc: Doc):
     word_frequencies = Counter()
 
     for sentence in doc.sents:
@@ -23,7 +24,7 @@ def num_types(doc):
     return len(word_frequencies.keys())
 
 
-def num_words(doc):  # Think about punctuation
+def num_words(doc: Doc):  # Think about punctuation
     word_frequencies = Counter()
 
     for sentence in doc.sents:
@@ -33,7 +34,7 @@ def num_words(doc):  # Think about punctuation
     return sum(word_frequencies.values())
 
 
-def avg_words_sentence(doc):
+def avg_words_sentence(doc: Doc):
     word_count_sentences = []
 
     for sentence in doc.sents:
@@ -47,7 +48,7 @@ def avg_words_sentence(doc):
     return np.mean(word_count_sentences)
 
 
-def avg_word_length(doc):
+def avg_word_length(doc: Doc):
     word_lengths = []
 
     for sentence in doc.sents:
@@ -55,6 +56,46 @@ def avg_word_length(doc):
         [word_lengths.append(len(word)) for word in words]
 
     return np.mean(word_lengths)
+
+
+def token_bigrams(doc: Doc):
+    bigram_frequencies = Counter()
+
+    for i in range(len(doc) - 1):
+        bigram = (doc[i].text, doc[i + 1].text)
+        bigram_frequencies.update([bigram])
+
+    return bigram_frequencies.most_common(3)
+
+
+def token_trigrams(doc: Doc):
+    trigram_frequencies = Counter()
+
+    for i in range(len(doc) - 2):
+        trigram = (doc[i].text, doc[i + 1].text, doc[i + 2].text)
+        trigram_frequencies.update([trigram])
+
+    return trigram_frequencies.most_common(3)
+
+
+def pos_bigrams(doc: Doc):
+    bigram_frequencies = Counter()
+
+    for i in range(len(doc) - 1):
+        bigram = (doc[i].pos_, doc[i + 1].pos_)
+        bigram_frequencies.update([bigram])
+
+    return bigram_frequencies.most_common(3)
+
+
+def pos_trigrams(doc: Doc):
+    trigram_frequencies = Counter()
+
+    for i in range(len(doc) - 2):
+        trigram = (doc[i].pos_, doc[i + 1].pos_, doc[i + 2].pos_)
+        trigram_frequencies.update([trigram])
+
+    return trigram_frequencies.most_common(3)
 
 
 def main():
@@ -74,6 +115,12 @@ def main():
     print("Number of words:", num_words(doc))
     print("Average number of words per sentence:", round(avg_words_sentence(doc), 2))
     print("Average word length:", round(avg_word_length(doc), 2))
+
+    print("\nToken bigrams:", token_bigrams(doc))
+    print("Token trigrams:", token_trigrams(doc))
+
+    print("\nPOS bigrams:", pos_bigrams(doc))
+    print("POS trigrams:", pos_trigrams(doc))
 
 
 if __name__ == "__main__":
