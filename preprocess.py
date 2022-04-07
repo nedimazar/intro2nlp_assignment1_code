@@ -1,5 +1,7 @@
 # A simple class for the preprocessing of text input for NLP tasks
-# For English language
+# For English
+
+
 class Preprocessor:
     text_data: str
 
