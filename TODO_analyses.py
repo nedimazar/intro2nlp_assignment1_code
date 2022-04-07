@@ -2,6 +2,7 @@
 # Run them on data/preprocessed/train/sentences.txt
 
 import spacy
+import numpy as np
 from collections import Counter
 
 
@@ -20,15 +21,37 @@ def num_types(doc):
 
 
 def num_words(doc):
-    return -1
+    word_frequencies = Counter()
+
+    for sentence in doc.sents:
+        words = [token.text for token in sentence if not token.is_punct]
+        word_frequencies.update(words)
+
+    return sum(word_frequencies.values())
 
 
 def avg_words_sentence(doc):
-    return -1
+    word_count_sentences = []
+
+    for sentence in doc.sents:
+        word_frequencies = Counter()
+
+        words = [token.text for token in sentence if not token.is_punct]
+        word_frequencies.update(words)
+
+        word_count_sentences.append(sum(word_frequencies.values()))
+
+    return np.mean(word_count_sentences)
 
 
 def avg_word_length(doc):
-    return -1
+    word_lengths = []
+
+    for sentence in doc.sents:
+        words = [token.text for token in sentence if not token.is_punct]
+        [word_lengths.append(len(word)) for word in words]
+
+    return np.mean(word_lengths)
 
 
 def main():
