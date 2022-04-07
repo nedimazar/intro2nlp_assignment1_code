@@ -3,6 +3,9 @@
 
 import spacy
 import numpy as np
+
+# from spacy import textacy
+from preprocess import Preprocessor
 from collections import Counter
 
 
@@ -20,7 +23,7 @@ def num_types(doc):
     return len(word_frequencies.keys())
 
 
-def num_words(doc):
+def num_words(doc):  # Think about punctuation
     word_frequencies = Counter()
 
     for sentence in doc.sents:
@@ -59,6 +62,10 @@ def main():
 
     with open("data/preprocessed/train/sentences.txt", "r") as text_file:
         text_data = text_file.read()
+
+    preprocessor = Preprocessor(text_data)
+
+    text_data = preprocessor.process()
 
     doc = nlp(text_data)
 
