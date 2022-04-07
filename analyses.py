@@ -40,10 +40,8 @@ def avg_words_sentence(doc: Doc):
 
     for sentence in doc.sents:
         word_frequencies = Counter()
-
         words = [token.text for token in sentence if not token.is_punct]
         word_frequencies.update(words)
-
         word_count_sentences.append(sum(word_frequencies.values()))
 
     return np.mean(word_count_sentences)
@@ -109,7 +107,6 @@ def n_unique_labels(doc: Doc):
 
 def visualize(doc: Doc):
     first_five = list(doc.sents)[:5]
-
     displacy.serve(first_five, style="ent", port=5001)
 
 
@@ -119,9 +116,10 @@ def main():
     with open("data/preprocessed/train/sentences.txt", "r") as text_file:
         text_data = text_file.read()
 
-    preprocessor = Preprocessor(text_data)
-
-    text_data = preprocessor.process()
+    # Replacing newline characters with a space, otherwise the newline character becomes a very common token
+    text_data = text_data.replace("\n", " ")
+    # Getting rid of the escape backslash, because we do not think it is a part of Natural Language
+    text_data = text_data.replace("\\", "")
 
     doc = nlp(text_data)
 
