@@ -1,5 +1,6 @@
 # A simple class for the preprocessing of text input for NLP tasks
 # For English
+# We did not end up using this.
 
 
 class Preprocessor:
