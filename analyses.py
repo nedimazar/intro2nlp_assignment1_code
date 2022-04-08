@@ -110,6 +110,33 @@ def visualize(doc: Doc):
     displacy.serve(first_five, style="ent", port=5001)
 
 
+def lemmas(doc: Doc):
+    lemma_dict = dict()
+
+    for sent, i in zip(doc.sents, range(len(list(doc.sents)))):
+        for token in sent:
+            lemma = token.lemma_
+            text = token.text
+
+            if lemma not in lemma_dict:
+                lemma_dict[lemma] = {text: {i}}
+            else:
+                if text not in lemma_dict[lemma]:
+                    lemma_dict[lemma][text] = {i}
+                else:
+                    lemma_dict[lemma][text].add(i)
+
+    print("A lemma that appears in more than 2 forms:")
+    for lemma in lemma_dict:
+        if lemma == "murder":
+            print("***", lemma)
+            for inflection in lemma_dict[lemma]:
+                print("\t***", inflection)
+                for i in lemma_dict[lemma][inflection]:
+                    print("\t\t", list(doc.sents)[i])
+                    break
+
+
 def main():
     nlp = spacy.load("en_core_web_sm")
 
@@ -140,6 +167,8 @@ def main():
 
     # Uncomment to visualize NER on first 5 sentences
     # visualize(doc)
+
+    lemmas(doc)
 
 
 if __name__ == "__main__":
