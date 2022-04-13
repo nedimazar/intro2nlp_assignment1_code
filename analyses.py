@@ -3,7 +3,7 @@
 
 import spacy
 import numpy as np
-
+from tabulate import tabulate
 # from spacy import textacy
 from spacy import displacy
 from spacy.tokens.doc import Doc
@@ -136,11 +136,52 @@ def lemmas(doc: Doc):
                     print("\t\t", list(doc.sents)[i])
                     break
 
+def counter_to_relative(counter):
+    """ 
+        get relative frequencies of counter
+    """
+    total_count = sum(counter.values())
+    relative = {}
+    for key in counter:
+        relative[key] = counter[key] / total_count
+    return relative
+
+def part_of_the_speech(doc):
+
+    pos_frequencies = Counter()
+    pos_tags_dict = {}
+    pos_tags = []
+    
+    for sentence in doc.sents:
+        # pos_tags = [token.pos_ for token in sentence]
+        for token in sentence:
+            tokens = []    
+            pos_tags.append(token.pos_)
+            tokens.append(token.text)
+            
+            if not token.pos_ in pos_tags_dict.keys():
+                pos_tags_dict[token.pos_] = Counter()
+            
+            pos_tags_dict[token.pos_].update(tokens)
+            
+        
+    pos_frequencies.update(pos_tags)
+    relative_freq = counter_to_relative(pos_frequencies)
+    
+    # print(pos_tags_dict)
+    # print("most common verbs: \n",pos_tags_dict['VERB'].most_common(3),"\n")
+    # print("less common verbs: \n",pos_tags_dict['VERB'].most_common()[-1],"\n")
+    # print("pos_frecuencies:\n",pos_frequencies,"\n")
+    # print("relative freq:\n",relative_freq,"\n")
+    # print("sum: \n",sum(pos_frequencies.values()))
+
+    return tabulate([[pos,pos_frequencies[pos],round(relative_freq[pos],2),pos_tags_dict[pos].most_common(3),pos_tags_dict[pos].most_common()[-1]] for pos in pos_tags_dict.keys()]
+        ,headers=["Finegrained POS-tag","Occurrences","Relative Tag Frequency (%)","3 Most frequent tokens","Infrequent token"])
 
 def main():
     nlp = spacy.load("en_core_web_sm")
 
-    with open("data/preprocessed/train/sentences.txt", "r") as text_file:
+    with open("data/preprocessed/train/sentences.txt", "r",encoding="utf8") as text_file:
         text_data = text_file.read()
 
     # Replacing newline characters with a space, otherwise the newline character becomes a very common token
@@ -168,8 +209,10 @@ def main():
     # Uncomment to visualize NER on first 5 sentences
     # visualize(doc)
 
+
     lemmas(doc)
 
+    print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
 
 if __name__ == "__main__":
     main()
