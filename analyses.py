@@ -9,6 +9,7 @@ from spacy import displacy
 from spacy.tokens.doc import Doc
 from preprocess import Preprocessor
 from collections import Counter
+import pandas as pd
 
 
 def num_tokens(doc: Doc):
@@ -178,6 +179,37 @@ def part_of_the_speech(doc):
     return tabulate([[pos,pos_frequencies[pos],round(relative_freq[pos],2),pos_tags_dict[pos].most_common(3),pos_tags_dict[pos].most_common()[-1]] for pos in pos_tags_dict.keys()]
         ,headers=["Finegrained POS-tag","Occurrences","Relative Tag Frequency (%)","3 Most frequent tokens","Infrequent token"])
 
+def extract_basic_statistics():
+
+    df = pd.read_csv('data/original/english/WikiNews_Train.tsv', sep='\t',header=None)
+
+    print(df.columns)
+
+    print(df.iloc[1:5,10])
+
+    #Number of instances labeled with 0:
+    print("The number of instances labeled with 0: ",len(df.loc[df.iloc[:,9] == 0]))
+    
+    #Number of instances labeled with 1:
+    print("The number of instances labeled with 1: ",len(df.loc[df.iloc[:,9] == 1]))    
+
+    #Min, max, median, mean, and stdev of the probabilistic label
+    print("Probabilistic Label:")    
+    print("\t max=",df.iloc[:,10].max())
+    print("\t min=",df.iloc[:,10].min())
+    print("\t median=",df.iloc[:,10].median())
+    print("\t mean=",df.iloc[:,10].mean())
+    print("\t stdev=",df.iloc[:,10].std())
+
+    #Number of instances consisting of more than one token
+    mask=df.iloc[:,4].str.strip().str.split(' ').str.len()
+    print("Number of instances consisting of more than one token: ",len(df[mask > 1]))
+    
+    #Maximum number of tokens for an instance
+    max_length = df.iloc[:,4].str.strip().str.split(' ').str.len().max()
+    print("Maximum number of tokens for an instance: ", max_length, "\t instance: ")
+    print(df.iloc[:,4][df.iloc[:,4].str.strip().str.split(' ').str.len() > (max_length -1)])
+
 def main():
     nlp = spacy.load("en_core_web_sm")
 
@@ -191,28 +223,29 @@ def main():
 
     doc = nlp(text_data)
 
-    print("Number of tokens:", num_tokens(doc))
-    print("Number of types:", num_types(doc))
-    print("Number of words:", num_words(doc))
-    print("Average number of words per sentence:", round(avg_words_sentence(doc), 2))
-    print("Average word length:", round(avg_word_length(doc), 2))
+    # print("Number of tokens:", num_tokens(doc))
+    # print("Number of types:", num_types(doc))
+    # print("Number of words:", num_words(doc))
+    # print("Average number of words per sentence:", round(avg_words_sentence(doc), 2))
+    # print("Average word length:", round(avg_word_length(doc), 2))
 
-    print("\nToken bigrams:", token_bigrams(doc))
-    print("Token trigrams:", token_trigrams(doc))
+    # print("\nToken bigrams:", token_bigrams(doc))
+    # print("Token trigrams:", token_trigrams(doc))
 
-    print("\nPOS bigrams:", pos_bigrams(doc))
-    print("POS trigrams:", pos_trigrams(doc))
+    # print("\nPOS bigrams:", pos_bigrams(doc))
+    # print("POS trigrams:", pos_trigrams(doc))
 
-    print("\nNumber of named entities:", n_named_entites(doc))
-    print("Number of different entity labels:", n_unique_labels(doc))
+    # print("\nNumber of named entities:", n_named_entites(doc))
+    # print("Number of different entity labels:", n_unique_labels(doc))
 
-    # Uncomment to visualize NER on first 5 sentences
-    # visualize(doc)
+    # # Uncomment to visualize NER on first 5 sentences
+    # # visualize(doc)
 
+    # lemmas(doc)
 
-    lemmas(doc)
+    # print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
 
-    print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
+    extract_basic_statistics()
 
 if __name__ == "__main__":
     main()
