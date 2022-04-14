@@ -198,7 +198,12 @@ def part_of_the_speech(doc):
     )
 
 
-def extract_basic_statistics():
+def extract_basic_statistics(doc):
+
+    # TODO @Martin
+    # It would be nice to use the Doc object for some of the stuff with token counting maybe
+    # Or even if we don't use the Doc object directly we should use the Spacy tokenizer for consistency
+    # See https://spacy.io/usage/linguistic-features#how-tokenizer-works
 
     df = pd.read_csv("data/original/english/WikiNews_Train.tsv", sep="\t", header=None)
 
@@ -279,7 +284,7 @@ def main():
 
     # print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
 
-    extract_basic_statistics()
+    extract_basic_statistics(doc)
 
 
 if __name__ == "__main__":
