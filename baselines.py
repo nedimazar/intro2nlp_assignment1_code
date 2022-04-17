@@ -95,15 +95,23 @@ def length_baseline(train_sentences, train_labels, test_input, test_labels, k=1)
     return accuracy, predictions
 
 
-def frequency_baseline(train_sentences, train_labels, test_input, test_labels, freq=20):
+def frequency_baseline(
+    train_sentences, train_labels, test_input, test_labels, freq=20, freq_table=None
+):
     predictions = []
-    joined = " ".join([" ".join(l) for l in test_input])
-    length = len(joined.split())
 
     for instance in test_input:
-        instance_predictions = [
-            "C" if joined.count(t) / length <= freq else "N" for t in instance
-        ]
+        # instance_predictions = [
+        #     "C" if t.lower() in freq_table and freq_table[t.lower()] <= freq else "N"
+        #     for t in instance
+        # ]
+        instance_predictions = []
+        for t in instance:
+            if t.lower() not in freq_table or freq_table[t.lower()] <= freq:
+                instance_predictions.append("C")
+            else:
+                instance_predictions.append("N")
+
         predictions.append(instance_predictions)
 
     accuracy = accuracy_metric(test_labels, predictions)
@@ -117,7 +125,7 @@ def variate_length(train_sentences, train_labels, dev_sentences, dev_labels):
 
     for k in range(1, 30):
         accuracy, length_predictions = length_baseline(
-            train_sentences, train_labels, test_sentences, test_labels, k=k
+            train_sentences, train_labels, dev_sentences, dev_labels, k=k
         )
 
         if accuracy >= max_accuracy:
@@ -132,16 +140,29 @@ def variate_frequency(train_sentences, train_labels, dev_sentences, dev_labels):
     max_accuracy = -1
     best_predictions = None
 
-    for freq in np.arange(0.01, 99.99, 0.01):
+    freq_table = {}
+    for sent in train_sentences:
+        for tok in sent:
+            if tok.lower() in freq_table:
+                freq_table[tok.lower()] += 1
+            else:
+                freq_table[tok.lower()] = 0
+
+    for freq in np.arange(1, 300, 1):
         accuracy, frequency_predictions = frequency_baseline(
-            train_sentences, train_labels, test_sentences, test_labels, freq=freq
+            train_sentences,
+            train_labels,
+            dev_sentences,
+            dev_labels,
+            freq=freq,
+            freq_table=freq_table,
         )
 
         if accuracy >= max_accuracy:
             best_freq = freq
             max_accuracy = accuracy
             best_predictions = frequency_predictions
-    return max_accuracy, best_predictions, best_freq
+    return max_accuracy, best_predictions, best_freq, freq_table
 
 
 if __name__ == "__main__":
@@ -205,11 +226,16 @@ if __name__ == "__main__":
         round(length_accuracy_test, 2),
     )
 
-    freq_accuracy_dev, freq_predictions_dev, freq = variate_frequency(
+    freq_accuracy_dev, freq_predictions_dev, freq, freq_table = variate_frequency(
         train_sentences, train_labels, dev_sentences, dev_labels
     )
     freq_accuracy_test, freq_predictions_test = frequency_baseline(
-        train_sentences, train_labels, test_sentences, test_labels, freq=freq
+        train_sentences,
+        train_labels,
+        test_sentences,
+        test_labels,
+        freq=freq,
+        freq_table=freq_table,
     )
     print(
         f"\nFREQUENCY <={freq} baseline accuracy DEV:",
