@@ -3,8 +3,8 @@
     "dev_size": 85,
     "test_size": 19,
     "vocab_size": 4119,
-    "number_of_tags": 3,
+    "number_of_tags": 2,
     "pad_word": "<pad>",
-    "pad_tag": "O",
+    "pad_tag": "N",
     "unk_word": "UNK"
 }

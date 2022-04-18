@@ -30,7 +30,6 @@ def confusion_matrix(gold, predicted):
                     matrix["TN"] += 1
                 else:
                     matrix["FN"] += 1
-
     return matrix
 
 
@@ -40,7 +39,10 @@ def precision(gold, predicted):
     FP = matrix["FP"]
     TN = matrix["TN"]
     FN = matrix["FN"]
-    return TP / (TP + FP)
+    try:
+        return TP / (TP + FP)
+    except ZeroDivisionError:
+        return 0
 
 
 def recall(gold, predicted):
@@ -49,7 +51,11 @@ def recall(gold, predicted):
     FP = matrix["FP"]
     TN = matrix["TN"]
     FN = matrix["FN"]
-    return TP / (TP + FN)
+
+    try:
+        return TP / (TP + FN)
+    except ZeroDivisionError:
+        return 0
 
 
 def accuracy_metric(gold, predicted):
@@ -58,7 +64,24 @@ def accuracy_metric(gold, predicted):
     FP = matrix["FP"]
     TN = matrix["TN"]
     FN = matrix["FN"]
-    return (TP + TN) / (TP + FP + TN + FN)
+
+    try:
+        return (TP + TN) / (TP + FP + TN + FN)
+    except ZeroDivisionError:
+        return 0
+
+
+def F1(gold, predicted):
+    matrix = confusion_matrix(gold, predicted)
+    TP = matrix["TP"]
+    FP = matrix["FP"]
+    TN = matrix["TN"]
+    FN = matrix["FN"]
+
+    try:
+        return TP / (TP + 0.5 * (FP + FN))
+    except ZeroDivisionError:
+        return 0
 
 
 def majority_baseline(train_sentences, train_labels, test_input, test_labels):
@@ -72,6 +95,12 @@ def majority_baseline(train_sentences, train_labels, test_input, test_labels):
         predictions.append(instance_predictions)
 
     accuracy = accuracy_metric(test_labels, predictions)
+    # print("----------------------------------------------------")
+    # print(f"MAJORITY PRECISION : {round(precision(test_labels, predictions), 2)}")
+    # print(f"MAJORITY RECALL    : {round(recall(test_labels, predictions), 2)}")
+    # print(f"MAJORITY F1        : {round(F1(test_labels, predictions), 2)}")
+    # print("----------------------------------------------------")
+
     return accuracy, predictions
 
 
@@ -82,6 +111,13 @@ def random_baseline(train_sentences, train_labels, test_input, test_labels):
         predictions.append(instance_predictions)
 
     accuracy = accuracy_metric(test_labels, predictions)
+
+    # print("----------------------------------------------------")
+    # print(f"RANDOM PRECISION : {round(precision(test_labels, predictions), 2)}")
+    # print(f"RANDOM RECALL    : {round(recall(test_labels, predictions), 2)}")
+    # print(f"RANDOM F1        : {round(F1(test_labels, predictions), 2)}")
+    # print("----------------------------------------------------")
+
     return accuracy, predictions
 
 
@@ -92,6 +128,12 @@ def length_baseline(train_sentences, train_labels, test_input, test_labels, k=1)
         predictions.append(instance_predictions)
 
     accuracy = accuracy_metric(test_labels, predictions)
+
+    # print("----------------------------------------------------")
+    # print(f"LENGTH PRECISION : {round(precision(test_labels, predictions), 2)}")
+    # print(f"LENGTH RECALL    : {round(recall(test_labels, predictions), 2)}")
+    # print(f"LENGTH F1        : {round(F1(test_labels, predictions), 2)}")
+    # print("----------------------------------------------------")
     return accuracy, predictions
 
 
@@ -115,6 +157,12 @@ def frequency_baseline(
         predictions.append(instance_predictions)
 
     accuracy = accuracy_metric(test_labels, predictions)
+
+    # print("----------------------------------------------------")
+    # print(f"FREQ PRECISION : {round(precision(test_labels, predictions), 2)}")
+    # print(f"FREQ RECALL    : {round(recall(test_labels, predictions), 2)}")
+    # print(f"FREQ F1        : {round(F1(test_labels, predictions), 2)}")
+    # print("----------------------------------------------------")
     return accuracy, predictions
 
 
