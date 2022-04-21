@@ -198,18 +198,11 @@ def part_of_the_speech(doc):
     )
 
 
-def extract_basic_statistics(doc):
+def extract_basic_statistics():
 
-    # TODO @Martin
-    # It would be nice to use the Doc object for some of the stuff with token counting maybe
-    # Or even if we don't use the Doc object directly we should use the Spacy tokenizer for consistency
-    # See https://spacy.io/usage/linguistic-features#how-tokenizer-works
+    nlp = spacy.load("en_core_web_sm")
 
     df = pd.read_csv("data/original/english/WikiNews_Train.tsv", sep="\t", header=None)
-
-    # print(df.columns)
-
-    # print(df.iloc[1:5, 10])
 
     # Number of instances labeled with 0:
     print("The number of instances labeled with 0: ", len(df.loc[df.iloc[:, 9] == 0]))
@@ -225,27 +218,36 @@ def extract_basic_statistics(doc):
     print("\t mean=", round(df.iloc[:, 10].mean(), 2))
     print("\t stdev=", round(df.iloc[:, 10].std(), 2))
 
-    # TODO
-    # We probably need to use the Spacy tokenizer so it will count punctuation
     # Number of instances consisting of more than one token
-    mask = df.iloc[:, 1].str.strip().str.split(" ").str.len()
+    target_word_column = df.iloc[:,4]
+
+    tokens = []
+    lemma = []
+    pos = []
+
+    for doc in nlp.pipe(target_word_column.astype('unicode').values, batch_size=50):
+        if doc.is_parsed:
+            tokens.append([n.text for n in doc])
+            lemma.append([n.lemma_ for n in doc])
+            pos.append([n.pos_ for n in doc])
+        else:
+            # We want to make sure that the lists of parsed results have the
+            # same number of entries of the original Dataframe, so add some blanks in case the parse fails
+            tokens.append(None)
+            lemma.append(None)
+            pos.append(None)
+
+    df['species_tokens'] = tokens
+    df['species_lemma'] = lemma
+    df['species_pos'] = pos
+
     print(
-        "\nNumber of instances consisting of more than one token: ", len(df[mask > 1])
+        "\nNumber of instances consisting of more than one token: ", len(df.loc[df['species_tokens'].str.len() > 1])
     )
 
-    # TODO
-    # Same thing here with the tokenizer
-    # Maximum number of tokens for an instance
-    max_length = df.iloc[:, 1].str.strip().str.split(" ").str.len().max()
-    print("\nMaximum number of tokens for an instance: ", max_length, "\t instance: ")
     print(
-        str(
-            df.iloc[:, 1][
-                df.iloc[:, 1].str.strip().str.split(" ").str.len() == max_length
-            ].iloc[:1]
-        )
+        "Maximum number of tokens for an instance: ", df['species_tokens'][df['species_tokens'].str.len() > 9]
     )
-
 
 def main():
     nlp = spacy.load("en_core_web_sm")
@@ -284,7 +286,7 @@ def main():
 
     # print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
 
-    extract_basic_statistics(doc)
+    extract_basic_statistics()
 
 
 if __name__ == "__main__":
