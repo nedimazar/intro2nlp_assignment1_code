@@ -215,7 +215,7 @@ if __name__ == "__main__":
     test_path = "data/preprocessed/test/"
 
     # Note: this loads all instances into memory. If you work with bigger files in the future, use an iterator instead.
-    with open(train_path + "sentences.txt") as sent_file:
+    with open(train_path + "sentences.txt" , encoding="utf8") as sent_file:
         train_sentences = sent_file.readlines()
         train_sentences = [x.strip("\n").split() for x in train_sentences]
     with open(train_path + "labels.txt") as label_file:
