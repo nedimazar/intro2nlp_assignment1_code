@@ -9,6 +9,7 @@ from model.data_loader import DataLoader
 from statistics import mode
 import random
 import numpy as np
+from wordfreq import word_frequency
 
 # Each baseline returns predictions for the test data. The length and frequency baselines determine a threshold using the development data.
 
@@ -137,26 +138,23 @@ def length_baseline(train_sentences, train_labels, test_input, test_labels, k=1)
     return accuracy, predictions
 
 
-def frequency_baseline(
-    train_sentences, train_labels, test_input, test_labels, freq=20, freq_table=None
-):
+def frequency_baseline(sentences, labels, threshold):
     predictions = []
 
-    for instance in test_input:
-        # instance_predictions = [
-        #     "C" if t.lower() in freq_table and freq_table[t.lower()] <= freq else "N"
-        #     for t in instance
-        # ]
+    for instance in sentences:
+
         instance_predictions = []
         for t in instance:
-            if t.lower() not in freq_table or freq_table[t.lower()] <= freq:
+            wf = word_frequency(t.lower(), "en", minimum=0.0)
+
+            if wf < threshold:
                 instance_predictions.append("C")
             else:
                 instance_predictions.append("N")
 
         predictions.append(instance_predictions)
 
-    accuracy = accuracy_metric(test_labels, predictions)
+    accuracy = accuracy_metric(labels, predictions)
 
     # print("----------------------------------------------------")
     # print(f"FREQ PRECISION : {round(precision(test_labels, predictions), 2)}")
@@ -183,34 +181,31 @@ def variate_length(train_sentences, train_labels, dev_sentences, dev_labels):
     return max_accuracy, best_predictions, best_k
 
 
-def variate_frequency(train_sentences, train_labels, dev_sentences, dev_labels):
+def variate_frequency(sentences, labels):
     best_freq = 0
     max_accuracy = -1
     best_predictions = None
 
-    freq_table = {}
-    for sent in train_sentences:
-        for tok in sent:
-            if tok.lower() in freq_table:
-                freq_table[tok.lower()] += 1
-            else:
-                freq_table[tok.lower()] = 0
+    words = []
+    for sentence in sentences:
+        for word in sentence:
+            words.append(word)
 
-    for freq in np.arange(1, 300, 1):
-        accuracy, frequency_predictions = frequency_baseline(
-            train_sentences,
-            train_labels,
-            dev_sentences,
-            dev_labels,
-            freq=freq,
-            freq_table=freq_table,
-        )
+    words = {word: word_frequency(word, "en", wordlist="best") for word in words}
 
-        if accuracy >= max_accuracy:
-            best_freq = freq
-            max_accuracy = accuracy
-            best_predictions = frequency_predictions
-    return max_accuracy, best_predictions, best_freq, freq_table
+    for freq in words.values():
+        if freq != 0:
+            accuracy, frequency_predictions = frequency_baseline(
+                sentences,
+                labels,
+                threshold=freq,
+            )
+
+            if accuracy >= max_accuracy:
+                best_freq = freq
+                max_accuracy = accuracy
+                best_predictions = frequency_predictions
+    return max_accuracy, best_predictions, best_freq
 
 
 if __name__ == "__main__":
@@ -274,16 +269,13 @@ if __name__ == "__main__":
         round(length_accuracy_test, 2),
     )
 
-    freq_accuracy_dev, freq_predictions_dev, freq, freq_table = variate_frequency(
-        train_sentences, train_labels, dev_sentences, dev_labels
+    freq_accuracy_dev, freq_predictions_dev, freq = variate_frequency(
+        dev_sentences, dev_labels
     )
     freq_accuracy_test, freq_predictions_test = frequency_baseline(
-        train_sentences,
-        train_labels,
         test_sentences,
         test_labels,
-        freq=freq,
-        freq_table=freq_table,
+        threshold=freq,
     )
     print(
         f"\nFREQUENCY <={freq} baseline accuracy DEV:",

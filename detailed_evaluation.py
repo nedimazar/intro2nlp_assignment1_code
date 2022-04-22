@@ -33,15 +33,24 @@ class Evaluation:
                         self.FN += 1
 
     def precision(self):
-        return self.TP / (self.TP + self.FP)
+        try:
+            return self.TP / (self.TP + self.FP)
+        except ZeroDivisionError:
+            return 0
 
     def recall(self):
-        return self.TP / (self.TP + self.FN)
+        try:
+            return self.TP / (self.TP + self.FN)
+        except ZeroDivisionError:
+            return 0
 
     def F1(self):
-        return 2 * (
-            (self.precision() * self.recall()) / (self.precision() + self.recall())
-        )
+        try:
+            return 2 * (
+                (self.precision() * self.recall()) / (self.precision() + self.recall())
+            )
+        except ZeroDivisionError:
+            return 0
 
     def print_metrics(self):
         print(f"Class {self.positive_class}")
@@ -53,9 +62,14 @@ class Evaluation:
 def main():
     e1 = Evaluation()
     e1.print_metrics()
+    F1C = e1.F1()
 
     e2 = Evaluation(positive_class="N")
     e2.print_metrics()
+    F1N = e2.F1()
+
+    wavg = (350 * F1N + 89 * F1C) / (350 + 89)
+    print("Weighted average F1:", round(wavg, 2))
 
 
 if __name__ == "__main__":

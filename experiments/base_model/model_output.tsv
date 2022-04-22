@@ -30,7 +30,7 @@ to	N	N
 the	N	N
 door	N	N
 ,	N	N
-officers	C	N
+officers	C	C
 forced	N	N
 their	N	N
 way	N	N
@@ -79,7 +79,7 @@ landed	C	C
 him	N	N
 in	N	N
 prison	C	N
-multiple	C	C
+multiple	C	N
 times	N	N
 .	N	N
 ----------
@@ -104,11 +104,11 @@ riots	C	C
 in	N	N
 prisons	C	N
 across	N	N
-Brazil	N	N
+Brazil	N	C
 ,	N	N
 dozens	C	N
 of	N	N
-inmates	C	C
+inmates	C	N
 ,	N	N
 mostly	N	N
 rival	C	C
@@ -145,7 +145,7 @@ Norte	C	N
 .	N	N
 ----------
 After	N	N
-upwards	C	C
+upwards	C	N
 of	N	N
 an	N	N
 hour	N	N
@@ -191,7 +191,7 @@ the	N	N
 Iraq	N	N
 and	N	N
 Afghanistan	C	N
-wars	N	C
+wars	N	N
 ,	N	N
 has	N	N
 already	N	N
@@ -234,13 +234,13 @@ inside	N	N
 Houston-area	N	N
 home	N	N
 Saturday	N	N
-night	N	N
+night	N	C
 ,	N	N
 police	N	N
 in	N	N
 Houston	N	N
 ,	N	N
-Texas	N	C
+Texas	N	N
 ,	N	N
 United	N	N
 States	N	N
@@ -286,7 +286,7 @@ protect	N	N
 the	N	N
 nation	N	N
 's	N	N
-citizens	C	C
+citizens	C	N
 .	N	N
 ----------
 Around	N	N
@@ -323,7 +323,7 @@ Chelsea	N	N
 Manning	C	N
 to	N	N
 walk	N	N
-free	N	N
+free	N	C
 in	N	N
 120	N	N
 days	N	N
@@ -443,8 +443,8 @@ June	N	N
 2021	N	N
 and	N	N
 French	N	N
-winger	C	N
-Franck	N	N
+winger	C	C
+Franck	N	C
 Ribéry	C	N
 signed	N	N
 a	N	N
