@@ -1,6 +1,7 @@
 # Implement linguistic analyses using spacy
 # Run them on data/preprocessed/train/sentences.txt
 
+from cmath import sin
 import spacy
 import numpy as np
 from tabulate import tabulate
@@ -10,6 +11,9 @@ from spacy import displacy
 from spacy.tokens.doc import Doc
 from collections import Counter
 import pandas as pd
+from wordfreq import word_frequency
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
 
 
 def num_tokens(doc: Doc):
@@ -199,6 +203,9 @@ def part_of_the_speech(doc):
 
 
 def extract_basic_statistics():
+    """
+    exercise 7
+    """
 
     nlp = spacy.load("en_core_web_sm")
 
@@ -249,6 +256,74 @@ def extract_basic_statistics():
         "Maximum number of tokens for an instance: ", df['species_tokens'][df['species_tokens'].str.len() > 9]
     )
 
+def explore_linguistic_characteristics():
+    """
+    exercise 8
+    """
+    nlp = spacy.load("en_core_web_sm")
+    df = pd.read_csv("data/original/english/WikiNews_Train.tsv", sep="\t", header=None)
+
+    target_word_column = df.iloc[:,4]
+
+    tokens = []
+    lemma = []
+    pos = []
+
+    for doc in nlp.pipe(target_word_column.astype('unicode').values, batch_size=50):
+        # if doc.is_parsed:
+        if doc.has_annotation("DEP"):
+            tokens.append([n.text for n in doc])
+            pos.append([n.pos_ for n in doc][0])
+        else:
+            tokens.append(None)    
+
+    df.loc[:,'tokens'] = tokens
+    df.loc[:,'POS'] = pos
+
+    # We will focus on the instances which consist only of a single token and have been labeled as complex by at least one annotator. 
+    # First, single token
+    single_token_df = df.loc[df['tokens'].str.len() == 1]
+
+    # then, 7th and 8th (starting at 0) columns show the number of native annotators and the number of non-native annotators who marked the target word as difficult.
+    single_token_df = single_token_df.rename(columns={single_token_df.columns[7]:'native',single_token_df.columns[8]:'no-native'})
+    
+    # complex-sigle-token (cst)
+    cst_df = single_token_df[(single_token_df['native'] > 0) | (single_token_df['no-native'] > 0)]
+
+    token_lengths = []
+    token_freqs = []
+    for token in cst_df['tokens']:
+        token_lengths.append(len(token[0]))
+        token_freqs.append(word_frequency(token[0], 'en', wordlist='best', minimum=0.0))
+
+
+    cst_df.loc[:,'length'] = token_lengths
+    cst_df.loc[:,'freq'] = token_freqs
+    
+    print(cst_df.head(20))
+
+    pearson_length_prob , pvalue1 = pearsonr(cst_df['length'], cst_df.iloc[:,10])
+    pearson_freq_prob , pvalue2 = pearsonr(cst_df['freq'], cst_df.iloc[:,10])
+
+    print("\n\n-Pearson correlation between length and complexity: ",round(pearson_length_prob,2))
+    print("-Pearson correlation between frequency and complexity: ",round(pearson_freq_prob,2))
+
+
+    plt.scatter(cst_df['length'], cst_df.iloc[:,10])
+    plt.title("Scatter Plot of Probabilistic Complexity Label vs Word Length")
+    plt.xlabel("Word Length")
+    plt.ylabel("Probabilistic Complexity Label")    
+    # plt.show()
+    plt.title("Scatter Plot of Probabilistic Complexity Label vs Word Frequency")
+    plt.xlabel("Word Frequency")    
+    plt.scatter(cst_df['freq'], cst_df.iloc[:,10])
+    # plt.show()  
+    plt.title("Scatter Plot of Probabilistic Complexity Label vs POS Tag")
+    plt.xlabel("POS Tag")        
+    plt.scatter(cst_df['POS'], cst_df.iloc[:,10])
+    # plt.show()
+
+
 def main():
     nlp = spacy.load("en_core_web_sm")
 
@@ -286,7 +361,9 @@ def main():
 
     # print("Word Classes - Most frequent POS tags: \n",part_of_the_speech(doc))
 
-    extract_basic_statistics()
+    # extract_basic_statistics()
+
+    # explore_linguistic_characteristics()
 
 
 if __name__ == "__main__":
